@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard – SecureAuthX</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <link rel="icon" href="/assets/logo.png">
+</head>
+<body>
+  <div class="toast-container" id="toastContainer"></div>
+
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-brand" style="cursor: pointer;" onclick="window.location.href='/'">
+          <div class="sidebar-brand-icon" style="background: transparent; box-shadow: none;"><img src="/assets/logo.png" alt="Logo" style="width: 100%; height: 100%; object-fit: contain;"></div>
+          <div>
+            <div class="sidebar-brand-name">SecureAuthX</div>
+            <div class="sidebar-brand-tag">Admin Console</div>
+          </div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Overview</div>
+          <a class="sidebar-link active" id="navDashboard">
+            <span class="sidebar-link-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
+            Dashboard
+          </a>
+          <a class="sidebar-link" id="navAnalytics">
+            <span class="sidebar-link-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
+            Analytics
+          </a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Management</div>
+          <a class="sidebar-link" id="navUsers">
+            <span class="sidebar-link-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+            Users
+            <span class="sidebar-link-badge" id="userCountBadge">-</span>
+          </a>
+          <a class="sidebar-link" id="navLogs">
+            <span class="sidebar-link-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
+            System Logs
+          </a>
+        </div>
+
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="sidebar-avatar" id="userAvatar" style="background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #92400e;">A</div>
+          <div class="sidebar-user-info">
+            <div class="sidebar-user-name" id="sidebarUsername">Admin</div>
+            <div class="sidebar-user-role">Administrator</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="main-header">
+        <div class="main-header-left">
+          <button class="sidebar-toggle" id="sidebarToggle"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+          <h1 class="main-header-title">Admin Dashboard</h1>
+          <p class="main-header-subtitle" id="welcomeSubtitle">System overview and management</p>
+        </div>
+        <div class="main-header-right">
+          <span class="badge badge-warning" style="font-size: 0.6875rem;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> ADMIN
+          </span>
+          <span class="badge badge-success">
+            <span class="status-dot success pulse"></span> System Online
+          </span>
+          <button class="btn btn-ghost btn-sm" id="logoutBtn" style="color: var(--danger-600); border: 1px solid var(--danger-200); margin-left: 12px;">Logout</button>
+        </div>
+      </header>
+
+      <div class="main-body">
+        <!-- Dashboard View -->
+        <div id="dashboardView">
+          <!-- Stats Row -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-label">Total Users</span>
+                <div class="stat-icon blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+              </div>
+              <div class="stat-value" id="statUsers">-</div>
+              <span class="stat-change up" id="usersChange">Registered accounts</span>
+            </div>
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-label">Successful Logins</span>
+                <div class="stat-icon green"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+              </div>
+              <div class="stat-value" id="statSuccess">-</div>
+              <span class="stat-change up">Authenticated</span>
+            </div>
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-label">Failed Logins</span>
+                <div class="stat-icon red"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+              </div>
+              <div class="stat-value" id="statFailed">-</div>
+              <span class="stat-change down" id="failedChange">Blocked attempts</span>
+            </div>
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-label">Total Attempts</span>
+                <div class="stat-icon purple"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+              </div>
+              <div class="stat-value" id="statTotal">-</div>
+              <span class="stat-change neutral">All activity</span>
+            </div>
+          </div>
+
+          <!-- Charts Row -->
+          <div class="charts-grid">
+            <div class="chart-card">
+              <div class="chart-header">
+                <div>
+                  <h3 class="chart-title">Login Results</h3>
+                  <p class="chart-subtitle">Success vs failure breakdown</p>
+                </div>
+              </div>
+              <div class="chart-container small">
+                <canvas id="loginResultsChart"></canvas>
+              </div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-header">
+                <div>
+                  <h3 class="chart-title">Role Distribution</h3>
+                  <p class="chart-subtitle">User roles across the platform</p>
+                </div>
+              </div>
+              <div class="chart-container small">
+                <canvas id="roleDistChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- System Activity Chart -->
+          <div class="charts-grid">
+            <div class="chart-card full-width">
+              <div class="chart-header">
+                <div>
+                  <h3 class="chart-title">System Activity</h3>
+                  <p class="chart-subtitle">Login attempts over the last 30 days</p>
+                </div>
+                <div class="chart-actions">
+                  <button class="chart-period-btn" data-days="7">7D</button>
+                  <button class="chart-period-btn active" data-days="30">30D</button>
+                </div>
+              </div>
+              <div class="chart-container">
+                <canvas id="systemActivityChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent System Logs -->
+          <div class="activity-card">
+            <div class="activity-header">
+              <h3 class="activity-title">Recent System Logs</h3>
+              <span class="activity-count" id="logsCount">Loading...</span>
+            </div>
+            <div class="table-container" style="border: none; border-radius: 0;">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Status</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>Details</th>
+                    <th>IP Address</th>
+                    <th>Timestamp</th>
+                  </tr>
+                </thead>
+                <tbody id="recentLogsBody">
+                  <tr>
+                    <td colspan="6" class="text-center" style="padding: 48px; color: var(--text-tertiary);">
+                      Loading system logs...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analytics View -->
+        <div id="analyticsView" class="hidden">
+          <div class="charts-grid">
+            <div class="chart-card full-width">
+              <div class="chart-header">
+                <div>
+                  <h3 class="chart-title">Detailed Authentication Analytics</h3>
+                  <p class="chart-subtitle">Extended login activity analysis</p>
+                </div>
+              </div>
+              <div class="chart-container" style="height: 350px;">
+                <canvas id="analyticsChart"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="charts-grid">
+            <div class="chart-card">
+              <div class="chart-header">
+                <div>
+                  <h3 class="chart-title">Success Rate</h3>
+                  <p class="chart-subtitle">Authentication success percentage</p>
+                </div>
+              </div>
+              <div class="chart-container small">
+                <canvas id="successRateChart"></canvas>
+              </div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-header">
+                <div>
+                  <h3 class="chart-title">Threat Level</h3>
+                  <p class="chart-subtitle">Failed attempt trends</p>
+                </div>
+              </div>
+              <div style="padding: 24px; text-align: center;">
+                <div id="threatLevel" style="margin-bottom: 12px; color: var(--success-500);"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></div>
+                <h4 id="threatText" style="font-size: 1.25rem; font-weight: 700; margin-bottom: 4px;">Low</h4>
+                <p style="font-size: 0.875rem; color: var(--text-secondary);">System is operating normally</p>
+                <div class="progress-bar" style="margin-top: 20px;">
+                  <div class="progress-fill success" id="threatBar" style="width: 15%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Users View -->
+        <div id="usersView" class="hidden">
+          <div class="activity-card">
+            <div class="activity-header">
+              <h3 class="activity-title">All Users</h3>
+              <span class="activity-count" id="totalUsersCount">-</span>
+            </div>
+            <div class="table-container" style="border: none; border-radius: 0;">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>MFA</th>
+                    <th>Status</th>
+                    <th>Last Login</th>
+                    <th>Joined</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                  <tr>
+                    <td colspan="7" class="text-center" style="padding: 48px; color: var(--text-tertiary);">
+                      Loading users...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Logs View -->
+        <div id="logsView" class="hidden">
+          <div class="activity-card">
+            <div class="activity-header">
+              <h3 class="activity-title">All System Logs</h3>
+              <span class="activity-count" id="allLogsCount">-</span>
+            </div>
+            <div class="table-container" style="border: none; border-radius: 0;">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Status</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>Details</th>
+                    <th>IP Address</th>
+                    <th>Timestamp</th>
+                  </tr>
+                </thead>
+                <tbody id="allLogsBody">
+                  <tr>
+                    <td colspan="7" class="text-center" style="padding: 48px; color: var(--text-tertiary);">
+                      Loading logs...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div style="background: white; border-radius: var(--radius-lg); width: 100%; max-width: 400px; padding: 24px; box-shadow: var(--shadow-xl);">
+      <h3 style="margin-top: 0; margin-bottom: 12px; font-size: 1.25rem; font-weight: 600; color: var(--text-primary);">Delete User</h3>
+      <p style="margin-bottom: 24px; color: var(--text-secondary); font-size: 0.875rem; line-height: 1.5;">Are you sure you want to delete this user? This action cannot be undone and all their data will be permanently removed.</p>
+      <div style="display: flex; justify-content: flex-end; gap: 12px;">
+        <button class="btn btn-ghost" id="cancelDeleteBtn">Cancel</button>
+        <button class="btn btn-primary" id="confirmDeleteBtn" style="background: var(--danger-600); border-color: var(--danger-600);">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logout Confirmation Modal -->
+  <div id="logoutModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div style="background: white; border-radius: var(--radius-lg); width: 100%; max-width: 400px; padding: 24px; box-shadow: var(--shadow-xl);">
+      <h3 style="margin-top: 0; margin-bottom: 12px; font-size: 1.25rem; font-weight: 600; color: var(--text-primary);">Confirm Logout</h3>
+      <p style="margin-bottom: 24px; color: var(--text-secondary); font-size: 0.875rem; line-height: 1.5;">Are you sure you want to end your current session?</p>
+      <div style="display: flex; justify-content: flex-end; gap: 12px;">
+        <button class="btn btn-ghost" id="cancelLogoutBtn">Cancel</button>
+        <button class="btn btn-primary" id="confirmLogoutBtn" style="background: var(--danger-600); border-color: var(--danger-600);">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/utils.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/dashboard-admin.js"></script>
+</body>
+</html>

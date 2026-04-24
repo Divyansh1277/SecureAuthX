@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Identity – SecureAuthX</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>S</text></svg>">
+</head>
+<body>
+  <div class="toast-container" id="toastContainer"></div>
+  <div class="spinner-overlay" id="spinnerOverlay">
+    <div class="flex flex-col items-center">
+      <div class="spinner"></div>
+      <p class="spinner-text">Verifying code...</p>
+    </div>
+  </div>
+
+  <div class="auth-layout">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="auth-logo-icon" style="background: transparent; box-shadow: none;">
+          <img src="/assets/logo.png" alt="Logo" style="width: 100%; height: 100%; object-fit: contain;">
+        </div>
+        <span class="auth-logo-text">Verification</span>
+      </div>
+
+      <!-- TOTP Verification View -->
+      <div id="totpView">
+        <h1 class="auth-title">Two-Factor Authentication</h1>
+        <p class="auth-subtitle">Enter the 6-digit code from your authenticator app</p>
+
+        <form id="totpForm">
+          <div class="otp-inputs" id="totpInputs">
+            <input type="text" class="otp-input" maxlength="1" data-index="0" inputmode="numeric" autocomplete="off">
+            <input type="text" class="otp-input" maxlength="1" data-index="1" inputmode="numeric" autocomplete="off">
+            <input type="text" class="otp-input" maxlength="1" data-index="2" inputmode="numeric" autocomplete="off">
+            <input type="text" class="otp-input" maxlength="1" data-index="3" inputmode="numeric" autocomplete="off">
+            <input type="text" class="otp-input" maxlength="1" data-index="4" inputmode="numeric" autocomplete="off">
+            <input type="text" class="otp-input" maxlength="1" data-index="5" inputmode="numeric" autocomplete="off">
+          </div>
+
+          <button type="submit" class="btn btn-primary w-full btn-lg" id="totpVerifyBtn">
+            Verify Code
+          </button>
+        </form>
+
+        <div class="auth-divider">or</div>
+
+        <button type="button" class="btn btn-secondary w-full" id="switchToEmail">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          Use Email Verification Instead
+        </button>
+      </div>
+
+      <!-- Email OTP View -->
+      <div id="emailView" class="hidden">
+        <h1 class="auth-title">Email Verification</h1>
+        <p class="auth-subtitle" id="emailSentMsg">We'll send a verification code to your email</p>
+
+        <!-- Send OTP State -->
+        <div id="emailSendState">
+          <div style="text-align: center; margin: 24px 0;">
+            <div style="margin-bottom: 16px; color: var(--primary-400);">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            </div>
+            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 24px;">
+              Click below to receive a 6-digit verification code via email.
+            </p>
+          </div>
+          <button type="button" class="btn btn-primary w-full btn-lg" id="sendEmailOtpBtn">
+            Send Verification Code
+          </button>
+        </div>
+
+        <!-- Verify Email OTP State -->
+        <div id="emailVerifyState" class="hidden">
+          <form id="emailOtpForm">
+            <div class="otp-inputs" id="emailOtpInputs">
+              <input type="text" class="otp-input" maxlength="1" data-index="0" inputmode="numeric" autocomplete="off">
+              <input type="text" class="otp-input" maxlength="1" data-index="1" inputmode="numeric" autocomplete="off">
+              <input type="text" class="otp-input" maxlength="1" data-index="2" inputmode="numeric" autocomplete="off">
+              <input type="text" class="otp-input" maxlength="1" data-index="3" inputmode="numeric" autocomplete="off">
+              <input type="text" class="otp-input" maxlength="1" data-index="4" inputmode="numeric" autocomplete="off">
+              <input type="text" class="otp-input" maxlength="1" data-index="5" inputmode="numeric" autocomplete="off">
+            </div>
+
+            <div style="text-align: center; margin-bottom: 20px;">
+              <p style="font-size: 0.8125rem; color: var(--text-tertiary);">
+                Code expires in <span id="otpTimer" style="font-weight: 700; color: var(--primary-600);">5:00</span>
+              </p>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-full btn-lg" id="emailVerifyBtn">
+              Verify Code
+            </button>
+          </form>
+
+          <div style="text-align: center; margin-top: 16px;">
+            <button type="button" class="btn btn-ghost" id="resendOtpBtn" disabled style="font-size: 0.8125rem;">
+              Resend Code <span id="resendTimer">(60s)</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="auth-divider">or</div>
+
+        <button type="button" class="btn btn-secondary w-full" id="switchToTotp">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          Use Authenticator App Instead
+        </button>
+      </div>
+
+      <div style="text-align: center; margin-top: 20px;">
+        <a href="/login" style="font-size: 0.8125rem; color: var(--text-tertiary);">← Back to Login</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/utils.js"></script>
+  <script src="/js/api.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const loginData = JSON.parse(sessionStorage.getItem('mfaLogin') || 'null');
+
+      if (!loginData || !loginData.tempToken) {
+        showToast('error', 'Session Expired', 'Please log in again.');
+        setTimeout(() => window.location.href = '/login', 2000);
+        return;
+      }
+
+      // Initialize OTP input handlers
+      initOtpInputs('totpInputs');
+      initOtpInputs('emailOtpInputs');
+
+      let otpTimerInterval;
+      let resendTimerInterval;
+
+      // TOTP Verification
+      document.getElementById('totpForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const code = getOtpValue('totpInputs');
+        if (code.length !== 6) {
+          showToast('error', 'Invalid Code', 'Please enter all 6 digits.');
+          return;
+        }
+
+        const btn = document.getElementById('totpVerifyBtn');
+        btn.classList.add('btn-loading');
+
+        try {
+          const res = await apiPost('/api/auth/verify-totp', {
+            token: code,
+            tempToken: loginData.tempToken,
+            userId: loginData.userId
+          });
+
+          if (res.success) {
+            localStorage.setItem('authToken', res.token);
+            localStorage.setItem('authUser', JSON.stringify(res.user));
+            showToast('success', 'Verified!', 'Redirecting to dashboard...');
+            sessionStorage.removeItem('mfaLogin');
+            setTimeout(() => {
+              window.location.href = res.user.role === 'admin' ? '/admin' : '/dashboard';
+            }, 1000);
+          } else {
+            showToast('error', 'Invalid Code', res.message);
+            clearOtpInputs('totpInputs');
+          }
+        } catch (err) {
+          showToast('error', 'Error', 'Verification failed. Please try again.');
+        } finally {
+          btn.classList.remove('btn-loading');
+        }
+      });
+
+      // Switch Views
+      document.getElementById('switchToEmail').addEventListener('click', () => {
+        document.getElementById('totpView').classList.add('hidden');
+        document.getElementById('emailView').classList.remove('hidden');
+      });
+
+      document.getElementById('switchToTotp').addEventListener('click', () => {
+        document.getElementById('emailView').classList.add('hidden');
+        document.getElementById('totpView').classList.remove('hidden');
+      });
+
+      // Send Email OTP
+      document.getElementById('sendEmailOtpBtn').addEventListener('click', async () => {
+        const btn = document.getElementById('sendEmailOtpBtn');
+        btn.classList.add('btn-loading');
+
+        try {
+          const res = await apiPost('/api/auth/send-email-otp', {
+            tempToken: loginData.tempToken
+          });
+
+          if (res.success) {
+            showToast('success', 'Code Sent', res.message);
+            document.getElementById('emailSentMsg').textContent = res.message;
+            document.getElementById('emailSendState').classList.add('hidden');
+            document.getElementById('emailVerifyState').classList.remove('hidden');
+            startOtpTimer();
+            startResendTimer();
+          } else {
+            showToast('error', 'Failed', res.message);
+          }
+        } catch (err) {
+          showToast('error', 'Error', 'Failed to send code.');
+        } finally {
+          btn.classList.remove('btn-loading');
+        }
+      });
+
+      // Verify Email OTP
+      document.getElementById('emailOtpForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const code = getOtpValue('emailOtpInputs');
+        if (code.length !== 6) {
+          showToast('error', 'Invalid Code', 'Please enter all 6 digits.');
+          return;
+        }
+
+        const btn = document.getElementById('emailVerifyBtn');
+        btn.classList.add('btn-loading');
+
+        try {
+          const res = await apiPost('/api/auth/verify-email-otp', {
+            otp: code,
+            tempToken: loginData.tempToken
+          });
+
+          if (res.success) {
+            localStorage.setItem('authToken', res.token);
+            localStorage.setItem('authUser', JSON.stringify(res.user));
+            showToast('success', 'Verified!', 'Redirecting to dashboard...');
+            sessionStorage.removeItem('mfaLogin');
+            setTimeout(() => {
+              window.location.href = res.user.role === 'admin' ? '/admin' : '/dashboard';
+            }, 1000);
+          } else {
+            showToast('error', 'Invalid Code', res.message);
+            clearOtpInputs('emailOtpInputs');
+          }
+        } catch (err) {
+          showToast('error', 'Error', 'Verification failed.');
+        } finally {
+          btn.classList.remove('btn-loading');
+        }
+      });
+
+      // Resend OTP
+      document.getElementById('resendOtpBtn').addEventListener('click', async () => {
+        const btn = document.getElementById('resendOtpBtn');
+        btn.disabled = true;
+
+        try {
+          const res = await apiPost('/api/auth/send-email-otp', {
+            tempToken: loginData.tempToken
+          });
+
+          if (res.success) {
+            showToast('success', 'Code Resent', res.message);
+            startOtpTimer();
+            startResendTimer();
+            clearOtpInputs('emailOtpInputs');
+          }
+        } catch (err) {
+          showToast('error', 'Error', 'Failed to resend code.');
+          btn.disabled = false;
+        }
+      });
+
+      // Timers
+      function startOtpTimer() {
+        let seconds = 300; // 5 minutes
+        clearInterval(otpTimerInterval);
+        otpTimerInterval = setInterval(() => {
+          seconds--;
+          const min = Math.floor(seconds / 60);
+          const sec = seconds % 60;
+          document.getElementById('otpTimer').textContent = `${min}:${sec.toString().padStart(2, '0')}`;
+          if (seconds <= 0) {
+            clearInterval(otpTimerInterval);
+            document.getElementById('otpTimer').textContent = 'Expired';
+            document.getElementById('otpTimer').style.color = 'var(--danger-600)';
+          }
+        }, 1000);
+      }
+
+      function startResendTimer() {
+        let seconds = 60;
+        const btn = document.getElementById('resendOtpBtn');
+        const timer = document.getElementById('resendTimer');
+        btn.disabled = true;
+        clearInterval(resendTimerInterval);
+        resendTimerInterval = setInterval(() => {
+          seconds--;
+          timer.textContent = `(${seconds}s)`;
+          if (seconds <= 0) {
+            clearInterval(resendTimerInterval);
+            timer.textContent = '';
+            btn.disabled = false;
+          }
+        }, 1000);
+      }
+    });
+  </script>
+</body>
+</html>
