@@ -89,3 +89,9 @@ When the server initializes for the first time, it automatically creates a defau
 - `/database` - Database initialization script and SQLite data file (`secureauthx.db`).
 - `/frontend` - Static assets, HTML pages, CSS, and client-side JavaScript.
 - `server.js` - Main application entry point.
+
+
+## Contributors
+
+- Divyansh Kumar
+- Thahseen Jafar
